@@ -578,8 +578,8 @@ document.getElementById('modalRegistrationForm').addEventListener('submit', func
         const newWorkshopTitle = newWorkshopBtn ? newWorkshopBtn.getAttribute('data-workshop-title') : '';
 
         if (data.exists) {
-            // If the email exists, but session does not match it
-            if (!sessionEmail || sessionEmail.toLowerCase() !== email.toLowerCase()) {
+            // If the email exists, but session is set to a DIFFERENT email
+            if (sessionEmail && sessionEmail.toLowerCase() !== email.toLowerCase()) {
                 alert(currentLang === 'ar'
                     ? 'هذا البريد الإلكتروني مسجل بالفعل لمستخدم آخر.'
                     : 'This email is already registered by another user.');

@@ -52,7 +52,7 @@ def register_ajax():
         }), 403
 
     existing_reg = Registration.query.filter_by(email=email).first()
-    if existing_reg and registered_email != email:
+    if existing_reg and registered_email and registered_email != email:
         return jsonify({
             'success': False,
             'message': 'This email is already registered by another user.' if lang == 'en' else 'هذا البريد الإلكتروني مسجل بالفعل لمستخدم آخر.'
@@ -213,7 +213,7 @@ def home():
             return redirect(url_for('main.home'))
         
         existing_reg = Registration.query.filter_by(email=email).first()
-        if existing_reg and registered_email != email:
+        if existing_reg and registered_email and registered_email != email:
             flash(
                 'This email is already registered by another user.' if lang == 'en' else 'هذا البريد الإلكتروني مسجل بالفعل لمستخدم آخر.',
                 'danger'
