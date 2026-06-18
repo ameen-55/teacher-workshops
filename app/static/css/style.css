@@ -224,6 +224,38 @@ html[dir="rtl"] .dept-title {
     letter-spacing: 2px;
 }
 
+.banner-date-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.8rem;
+    padding: 0.7rem 1.6rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 50px;
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+    margin: 0.5rem auto 1.5rem auto;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2), inset 0 0 15px rgba(255,255,255,0.05);
+    transition: var(--transition);
+    letter-spacing: 1px;
+}
+
+.banner-date-badge i {
+    color: #a78bfa;
+    font-size: 1.3rem;
+}
+
+.banner-date-badge:hover {
+    transform: translateY(-3px);
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(167, 139, 250, 0.4);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.3), 0 0 20px rgba(167, 139, 250, 0.3);
+}
+
 /* Neon Box (English Department) */
 .neon-box {
     display: inline-block;
