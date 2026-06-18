@@ -285,7 +285,9 @@ function openModal(workshopId, title, instructor) {
     document.body.style.overflow = 'hidden';
     
     setTimeout(function() {
-        document.getElementById('modalName').focus();
+        if (window.innerWidth > 768) {
+            document.getElementById('modalName').focus();
+        }
     }, 300);
 }
 

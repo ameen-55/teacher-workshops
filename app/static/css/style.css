@@ -1934,6 +1934,14 @@ html[dir="rtl"] .db-logs {
     .db-log-meta { flex-direction: column; }
 }
 
+@media (max-width: 480px) {
+    .modal-content { padding: 1.2rem; margin: 0.5rem; width: 95%; max-height: 85vh; }
+    .modal-header { margin-bottom: 1rem; }
+    .workshop-preview { padding: 0.8rem; margin-bottom: 1rem; }
+    .form-group { margin-bottom: 1rem; }
+    .modal-title { font-size: 1.2rem; }
+}
+
 /* -------------------------------------------------------------
    NEON FOOTER CREDIT
 ------------------------------------------------------------- */
