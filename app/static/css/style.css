@@ -1307,10 +1307,11 @@ html[dir="rtl"] .flash-message { text-align: right; }
     border: 2px solid rgba(255,255,255,0.12);
     border-radius: 16px;
     color: white;
-    font-size: 1rem;
+    font-size: 16px; /* Must be exactly 16px or larger to prevent iOS Safari auto-zoom */
     font-family: var(--font-sans);
     transition: var(--transition);
     outline: none;
+    -webkit-appearance: none; /* Helps with iOS styling consistency */
 }
 
 .form-control:focus {
