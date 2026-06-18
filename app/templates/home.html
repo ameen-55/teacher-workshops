@@ -178,75 +178,6 @@
     {% endfor %}
 </div>
 
-<!-- Registration Board -->
-<div class="registration-board" id="registrationBoard">
-    <div class="board-header">
-        <h2 class="text-gradient">{% if lang == 'ar' %}لوحة التسجيلات{% else %}Registration Board{% endif %}</h2>
-        <span class="board-count"><span id="totalRegistrationsBoard">{{ total_registrations }}</span> {% if lang == 'ar' %}إجمالي{% else %}total{% endif %}</span>
-    </div>
-    
-    <div class="board-workshops-list">
-        {% if workshops %}
-            {% for ws in workshops %}
-            <div class="board-workshop-section" data-workshop-id="{{ ws.id }}">
-                <div class="board-workshop-header {{ ws.color_class }}">
-                    <div class="board-workshop-icon">
-                        <i class="fa-solid {{ ws.icon_class }}"></i>
-                    </div>
-                    <div class="board-workshop-info">
-                        <h3>{% if lang == 'ar' %}{{ ws.title_ar }}{% else %}{{ ws.title }}{% endif %}</h3>
-                        <p class="instructor">{% if lang == 'ar' %}المدرب:{% else %}Instructor:{% endif %} {{ ws.instructor }}</p>
-                    </div>
-                    <div class="board-workshop-count">
-                        <span class="count-badge">{{ ws.participant_count }}</span>
-                        <small>{% if lang == 'ar' %}مسجل{% else %}registered{% endif %}</small>
-                    </div>
-                </div>
-                
-                <div class="board-participants">
-                    {% set workshop_regs = registrations | selectattr('workshop_id', 'equalto', ws.id) | list %}
-                    {% if workshop_regs %}
-                        {% for reg in workshop_regs %}
-                        <div class="participant-row" data-email="{{ reg.email }}">
-                            <div class="participant-avatar">
-                                <i class="fa-solid fa-user"></i>
-                            </div>
-                            <div class="participant-info">
-                                <div class="participant-name">{{ reg.name }}</div>
-                                <div class="participant-email">{{ reg.email }}</div>
-                            </div>
-                            <div class="participant-time">
-                                {% if reg.updated_at %}
-                                    <span class="time-badge">{{ reg.updated_at.strftime('%m/%d %H:%M') }}</span>
-                                {% else %}
-                                    <span class="time-badge">{{ reg.timestamp.strftime('%m/%d %H:%M') }}</span>
-                                {% endif %}
-                            </div>
-                            {% if session.get('registered_email') and session.get('registered_email')|lower == reg.email|lower %}
-                            <button class="btn-cancel-reg" onclick="cancelRegistration('{{ reg.email }}', '{{ reg.name }}')" title="{% if lang == 'ar' %}إلغاء التسجيل{% else %}Cancel Registration{% endif %}">
-                                <i class="fa-solid fa-trash-can"></i>
-                            </button>
-                            {% endif %}
-                        </div>
-                        {% endfor %}
-                    {% else %}
-                        <div class="no-participants">
-                            <i class="fa-solid fa-user-clock"></i>
-                            <span>{% if lang == 'ar' %}لا يوجد مسجلين بعد{% else %}No registrations yet{% endif %}</span>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
-            {% endfor %}
-        {% else %}
-            <div class="board-empty">
-                <i class="fa-solid fa-clipboard-list"></i>
-                <p>{% if lang == 'ar' %}لا توجد تسجيلات بعد{% else %}No registrations yet{% endif %}</p>
-            </div>
-        {% endif %}
-    </div>
-</div>
-
 <!-- Footer -->
 <footer class="footer" style="text-align: center; margin-top: 5rem; padding: 3rem 0; border-top: 1px solid rgba(255,255,255,0.05);">
     <div class="container">
@@ -398,89 +329,7 @@ function updateDynamicUI(data) {
     const boardTotal = document.getElementById('totalRegistrationsBoard');
     if (boardTotal) boardTotal.textContent = data.total_registrations;
     
-    // 3. Update participant list on the board
-    const newSection = document.querySelector(`.board-workshop-section[data-workshop-id="${data.new_workshop_id}"]`);
-    if (newSection) {
-        const boardParticipants = newSection.querySelector('.board-participants');
-        if (boardParticipants) {
-            // Remove no-participants if it exists
-            const noPart = boardParticipants.querySelector('.no-participants');
-            if (noPart) noPart.remove();
-            
-            if (data.is_new) {
-                // Prepend new row
-                const row = document.createElement('div');
-                row.className = 'participant-row';
-                row.setAttribute('data-email', data.participant_email);
-                row.innerHTML = `
-                    <div class="participant-avatar">
-                        <i class="fa-solid fa-user"></i>
-                    </div>
-                    <div class="participant-info">
-                        <div class="participant-name">${escapeHtml(data.participant_name)}</div>
-                        <div class="participant-email">${escapeHtml(data.participant_email)}</div>
-                    </div>
-                    <div class="participant-time">
-                        <span class="time-badge">${data.timestamp}</span>
-                    </div>
-                    <button class="btn-cancel-reg" onclick="cancelRegistration('${data.participant_email}', '${escapeHtml(data.participant_name)}')" title="${currentLang === 'ar' ? 'إلغاء التسجيل' : 'Cancel Registration'}">
-                        <i class="fa-solid fa-trash-can"></i>
-                    </button>
-                `;
-                boardParticipants.insertBefore(row, boardParticipants.firstChild);
-            } else {
-                // It's an update (either same workshop or different)
-                const existingRow = document.querySelector(`.participant-row[data-email="${data.participant_email}"]`);
-                if (existingRow) {
-                    // Update name and time
-                    const nameEl = existingRow.querySelector('.participant-name');
-                    if (nameEl) nameEl.textContent = data.participant_name;
-                    const timeBadge = existingRow.querySelector('.time-badge');
-                    if (timeBadge) timeBadge.textContent = data.timestamp;
-                    
-                    if (data.old_workshop_id && data.old_workshop_id !== data.new_workshop_id) {
-                        // Moved workshops!
-                        const oldSection = document.querySelector(`.board-workshop-section[data-workshop-id="${data.old_workshop_id}"]`);
-                        existingRow.remove();
-                        
-                        // If old section has no participant rows left, add no-participants
-                        if (oldSection) {
-                            const oldParticipants = oldSection.querySelector('.board-participants');
-                            if (oldParticipants && oldParticipants.querySelectorAll('.participant-row').length === 0) {
-                                oldParticipants.innerHTML = currentLang === 'ar'
-                                    ? `<div class="no-participants"><i class="fa-solid fa-user-clock"></i><span>لا يوجد مسجلين بعد</span></div>`
-                                    : `<div class="no-participants"><i class="fa-solid fa-user-clock"></i><span>No registrations yet</span></div>`;
-                            }
-                        }
-                        
-                        // Prepend to new section
-                        boardParticipants.insertBefore(existingRow, boardParticipants.firstChild);
-                    }
-                } else {
-                    // Fallback: create row if missing
-                    const row = document.createElement('div');
-                    row.className = 'participant-row';
-                    row.setAttribute('data-email', data.participant_email);
-                    row.innerHTML = `
-                        <div class="participant-avatar">
-                            <i class="fa-solid fa-user"></i>
-                        </div>
-                        <div class="participant-info">
-                            <div class="participant-name">${escapeHtml(data.participant_name)}</div>
-                            <div class="participant-email">${escapeHtml(data.participant_email)}</div>
-                        </div>
-                        <div class="participant-time">
-                            <span class="time-badge">${data.timestamp}</span>
-                        </div>
-                        <button class="btn-cancel-reg" onclick="cancelRegistration('${data.participant_email}', '${escapeHtml(data.participant_name)}')" title="${currentLang === 'ar' ? 'إلغاء التسجيل' : 'Cancel Registration'}">
-                            <i class="fa-solid fa-trash-can"></i>
-                        </button>
-                    `;
-                    boardParticipants.insertBefore(row, boardParticipants.firstChild);
-                }
-            }
-        }
-    }
+
 }
 
 function submitRegistrationAjax(workshopId, name, email) {
@@ -523,13 +372,7 @@ function submitRegistrationAjax(workshopId, name, email) {
             // Update counts and registration board
             updateDynamicUI(data);
             
-            // Scroll to registration board after registration
-            setTimeout(function() {
-                const board = document.getElementById('registrationBoard');
-                if (board) {
-                    board.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
-            }, 3500);
+
         } else {
             alert(data.message || 'An error occurred.');
         }
@@ -691,20 +534,12 @@ function cancelRegistration(email, name) {
                         }
                     }
                     
-                    // Board counts
-                    const boardSection = document.querySelector(`.board-workshop-section[data-workshop-id="${wsId}"]`);
-                    if (boardSection) {
-                        const countBadge = boardSection.querySelector('.count-badge');
-                        if (countBadge) countBadge.textContent = count;
-                    }
                 }
             }
             
             // Update total registrations
             const heroTotal = document.getElementById('totalRegistrationsHero');
             if (heroTotal) heroTotal.textContent = data.total_registrations;
-            const boardTotal = document.getElementById('totalRegistrationsBoard');
-            if (boardTotal) boardTotal.textContent = data.total_registrations;
         } else {
             alert(data.message || 'An error occurred.');
         }
@@ -740,13 +575,6 @@ window.addEventListener('load', function() {
             showConfirmation(successMessageTitle, successMessageText, false);
         }, 1500);
         
-        // Scroll to registration board after registration
-        setTimeout(function() {
-            const board = document.getElementById('registrationBoard');
-            if (board) {
-                board.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-        }, 2500);
     }
 });
 
