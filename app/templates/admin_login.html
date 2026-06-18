@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if lang == 'ar' %}دخول المشرف{% else %}Admin Login{% endif %}{% endblock %}
+
+{% block content %}
+<div style="display: flex; align-items: center; justify-content: center; min-height: calc(100vh - 20rem); padding: 2rem;">
+    <div class="glass-card" style="max-width: 480px; width: 100%; padding: 3rem; text-align: center; border-radius: 30px; box-shadow: 0 30px 80px rgba(0,0,0,0.5);">
+        <div style="font-size: 4rem; color: var(--accent-purple); margin-bottom: 1.5rem; animation: pulse-button 2s infinite;">
+            <i class="fa-solid fa-user-shield"></i>
+        </div>
+        
+        <h2 style="font-size: 2.2rem; font-weight: 800; margin-bottom: 0.5rem; background: linear-gradient(135deg, #a78bfa, #667eea); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+            {% if lang == 'ar' %}لوحة التحكم{% else %}Admin Portal{% endif %}
+        </h2>
+        
+        <p style="color: rgba(255,255,255,0.6); margin-bottom: 2.5rem; font-size: 1.1rem;">
+            {% if lang == 'ar' %}الرجاء إدخال رمز المرور للمتابعة{% else %}Please enter the administrative password{% endif %}
+        </p>
+
+        <!-- Flash messages specific to login -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="flash-message {{ category }}" style="font-size: 0.95rem; padding: 0.8rem 1.2rem; margin-bottom: 1.5rem; border-radius: 12px;">
+                  <i class="fa-solid {% if category == 'success' %}fa-circle-check{% else %}fa-triangle-exclamation{% endif %}"></i>
+                  {{ message }}
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <form action="{{ url_for('main.admin_login') }}" method="POST">
+            <div class="form-group" style="text-align: left; margin-bottom: 2rem;">
+                <label for="password" class="form-label" style="display: block; font-weight: 600; margin-bottom: 0.8rem; color: rgba(255,255,255,0.8);">
+                    {% if lang == 'ar' %}رمز المرور{% else %}Security Password{% endif %}
+                </label>
+                <div style="position: relative;">
+                    <i class="fa-solid fa-lock" style="position: absolute; left: 1.2rem; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.4); font-size: 1.1rem;"></i>
+                    <input type="password" id="password" name="password" class="form-control" placeholder="••••••" style="padding-left: 3rem; background: rgba(0,0,0,0.3); border-color: rgba(255,255,255,0.1); font-size: 1.2rem;" required>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary btn-block" style="padding: 1rem; font-size: 1.2rem; font-weight: 700; border-radius: 16px;">
+                <i class="fa-solid fa-right-to-bracket"></i> {% if lang == 'ar' %}تسجيل الدخول{% else %}Access Dashboard{% endif %}
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Update Confirmed</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f4f7fc;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;">
+    <table role="presentation" style="width:100%;max-width:600px;margin:40px auto;background:#ffffff;border-radius:8px;overflow:hidden;border:1px solid #e2e8f0;">
+        <!-- Header -->
+        <tr>
+            <td style="background:linear-gradient(135deg,#f9ab00,#ff8c00);padding:30px 40px;text-align:center;">
+                <h1 style="color:#ffffff;margin:0;font-size:24px;letter-spacing:1px;">Workshop Registration Update</h1>
+                <p style="color:#fef3c7;margin:8px 0 0;font-size:14px;">Teacher Professional Development</p>
+            </td>
+        </tr>
+        <!-- Body -->
+        <tr>
+            <td style="padding:40px;">
+                <p style="font-size:16px;color:#1a1a2e;margin:0 0 6px;">Dear <strong>{{ teacher_name }}</strong>,</p>
+                <p style="font-size:15px;color:#4a5568;line-height:1.6;margin:0 0 20px;">
+                    This email confirms that your workshop registration has been <strong style="color:#f9ab00;">updated</strong> successfully.
+                </p>
+
+                <p style="font-size:15px;color:#4a5568;line-height:1.6;margin:0 0 8px;">You are now registered for:</p>
+                <div style="background:#fff7ed;border-left:4px solid #f9ab00;padding:16px 20px;margin:0 0 24px;border-radius:4px;">
+                    <p style="font-size:18px;color:#1a1a2e;font-weight:600;margin:0 0 4px;">{{ workshop_title }}</p>
+                </div>
+
+                <p style="font-size:15px;color:#4a5568;line-height:1.6;margin:0 0 16px;">
+                    The previous workshop selection has been replaced. No further action is needed on your part.
+                </p>
+
+                <p style="font-size:15px;color:#4a5568;line-height:1.6;margin:0 0 24px;">
+                    If you need to make further changes, simply re-submit the registration form with the same email address.
+                    <br><br>
+                    Visit: <a href="{{ workshop_url }}" style="color:#4285f4;text-decoration:underline;">{{ workshop_url }}</a>
+                </p>
+
+                <p style="font-size:15px;color:#4a5568;line-height:1.6;margin:0 0 4px;">
+                    Thank you for registering.
+                </p>
+                <p style="font-size:15px;color:#4a5568;line-height:1.6;margin:0;">
+                    Best regards,<br>
+                    <strong>{{ school_name }}</strong> Administration
+                </p>
+            </td>
+        </tr>
+        <!-- Footer -->
+        <tr>
+            <td style="background:#f4f7fc;padding:20px 40px;text-align:center;border-top:1px solid #e2e8f0;">
+                <p style="font-size:12px;color:#718096;margin:0;">This is an automated message from the Workshop Registration System.</p>
+                <p style="font-size:12px;color:#718096;margin:4px 0 0;">Please do not reply to this email directly.</p>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

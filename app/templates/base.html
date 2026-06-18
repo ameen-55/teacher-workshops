@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="{{ 'ar' if lang == 'ar' else 'en' }}" dir="{{ 'rtl' if lang == 'ar' else 'ltr' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Teacher Workshop Registration System">
+    <title>{% block title %}Workshop Registration{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <!-- Floating Particles Background -->
+    <div class="particles-bg">
+        <span></span><span></span><span></span><span></span>
+        <span></span><span></span><span></span><span></span>
+    </div>
+
+    <nav class="navbar" id="navbar">
+        {% if session.get('is_admin') %}
+        <a href="{{ url_for('main.admin_dashboard') }}" class="nav-brand">
+            <i class="fa-solid fa-user-shield"></i>
+            <span>{% if lang == 'ar' %}لوحة التحكم{% else %}ADMIN PANEL{% endif %}</span>
+        </a>
+        <ul class="nav-links">
+            <li>
+                <a href="{{ url_for('main.admin_dashboard') }}" class="nav-link active">
+                    <i class="fa-solid fa-chart-line"></i> {% if lang == 'ar' %}اللوحة{% else %}Dashboard{% endif %}
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('main.home') }}" class="nav-link">
+                    <i class="fa-solid fa-globe"></i> {% if lang == 'ar' %}عرض الموقع{% else %}View Site{% endif %}
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('main.admin_logout') }}" class="nav-cta" style="background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); color: #ef4444 !important; box-shadow: none; animation: none;">
+                    <i class="fa-solid fa-right-from-bracket"></i> {% if lang == 'ar' %}خروج{% else %}Logout{% endif %}
+                </a>
+            </li>
+            <li>
+                <a href="?lang={% if lang == 'ar' %}en{% else %}ar{% endif %}" class="nav-link nav-link-lang">
+                    <i class="fa-solid fa-language"></i> {% if lang == 'ar' %}English{% else %}العربية{% endif %}
+                </a>
+            </li>
+        </ul>
+        {% else %}
+        <a href="{{ url_for('main.home') }}" class="nav-brand">
+            <i class="fa-solid fa-chalkboard-user"></i>
+            <span>{% if lang == 'ar' %}ورش العمل{% else %}WORKSHOPS{% endif %}</span>
+        </a>
+        <ul class="nav-links">
+            <li>
+                <a href="{{ url_for('main.home') }}" class="nav-link active">
+                    <i class="fa-solid fa-house-chimney"></i> {% if lang == 'ar' %}الرئيسية{% else %}Home{% endif %}
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('main.home') }}#workshops" class="nav-link">
+                    <i class="fa-solid fa-graduation-cap"></i> {% if lang == 'ar' %}الورش{% else %}Workshops{% endif %}
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('main.home') }}#workshops" class="nav-cta">
+                    {% if lang == 'ar' %}سجّل الآن{% else %}Register Now{% endif %}
+                </a>
+            </li>
+            <li>
+                <a href="?lang={% if lang == 'ar' %}en{% else %}ar{% endif %}" class="nav-link nav-link-lang">
+                    <i class="fa-solid fa-language"></i> {% if lang == 'ar' %}English{% else %}العربية{% endif %}
+                </a>
+            </li>
+        </ul>
+        {% endif %}
+    </nav>
+
+    <main class="content-wrapper">
+        <div class="container">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p class="footer-text">© 2026 {% if lang == 'ar' %}ورش المعلمين{% else %}Teacher Workshops{% endif %}</p>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

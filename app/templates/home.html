@@ -1,0 +1,823 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if lang == 'ar' %}تسجيل ورش المعلمين{% else %}Teacher Workshop Registration{% endif %}{% endblock %}
+
+{% block content %}
+<!-- Registration Modal -->
+<div class="modal-overlay" id="registrationModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">{% if lang == 'ar' %}تسجيل في الورشة{% else %}Register for Workshop{% endif %}</h3>
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="modalRegistrationForm" action="{{ url_for('main.home') }}" method="POST">
+                <input type="hidden" id="modalWorkshopId" name="workshop_id">
+                <div class="workshop-preview" id="selectedWorkshopPreview">
+                    <div class="preview-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+                    <div class="preview-info">
+                        <div class="preview-title" id="previewWorkshopTitle">{% if lang == 'ar' %}اختر ورشة{% else %}Select a Workshop{% endif %}</div>
+                        <div class="preview-instructor" id="previewWorkshopInstructor"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="modalName" class="form-label">{% if lang == 'ar' %}الاسم الكامل{% else %}Full Name{% endif %}</label>
+                    <input type="text" id="modalName" name="name" class="form-control" placeholder="{% if lang == 'ar' %}مثال: أحمد حسن{% else %}e.g. Ahmad Hassan{% endif %}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="modalEmail" class="form-label">{% if lang == 'ar' %}البريد الإلكتروني{% else %}Email Address{% endif %}</label>
+                    <input type="email" id="modalEmail" name="email" class="form-control" placeholder="{% if lang == 'ar' %}مثال: teacher@school.edu{% else %}e.g. teacher@school.edu{% endif %}" required>
+                <small class="form-help">
+                    <i class="fa-solid fa-rotate"></i> {% if lang == 'ar' %}بريد إلكتروني واحد لكل معلم. أعد التسجيل لتغيير الورشة.{% else %}One email per teacher. Re-register to change workshop.{% endif %}
+                </small>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block">
+                    <i class="fa-solid fa-paper-plane"></i> {% if lang == 'ar' %}تأكيد التسجيل{% else %}Confirm Registration{% endif %}
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Change Confirmation Modal -->
+<div class="modal-overlay" id="changeModal">
+    <div class="modal-content modal-warning">
+        <div class="modal-icon">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <h3 class="modal-title">{% if lang == 'ar' %}تغيير التسجيل{% else %}Change Registration{% endif %}</h3>
+        <p class="modal-message" id="changeMessage"></p>
+        <div class="modal-actions">
+            <button class="btn btn-secondary" onclick="closeChangeModal()">{% if lang == 'ar' %}إلغاء{% else %}Cancel{% endif %}</button>
+            <button class="btn btn-primary" id="confirmChangeBtn">{% if lang == 'ar' %}تأكيد التغيير{% else %}Confirm Change{% endif %}</button>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Modal -->
+<div class="modal-overlay" id="confirmationModal">
+    <div class="modal-content modal-success">
+        <div class="modal-icon">
+            <i class="fa-solid fa-circle-check"></i>
+        </div>
+        <h3 class="modal-title" id="confirmationTitle">{% if lang == 'ar' %}تم التسجيل بنجاح!{% else %}Registration Successful!{% endif %}</h3>
+        <p class="modal-message" id="confirmationMessage"></p>
+        <button class="btn btn-primary" onclick="closeConfirmationModal()">{% if lang == 'ar' %}حسناً{% else %}Got it!{% endif %}</button>
+    </div>
+</div>
+
+<!-- Animated Hero Banner -->
+<div class="hero-banner" id="home">
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="hero-banner-content">
+        <!-- Header with English Department | Logo | Jern Yafoor -->
+        <div class="banner-header">
+        <div class="banner-header-left">
+            <div class="neon-box">
+                <h2 class="dept-title" id="englishDeptText">{% if lang == 'ar' %}قسم اللغة الإنجليزية{% else %}ENGLISH DEPARTMENT{% endif %}</h2>
+            </div>
+        </div>
+        <div class="banner-header-center">
+            <div class="banner-logo">
+                <i class="fa-solid fa-graduation-cap"></i>
+            </div>
+        </div>
+        <div class="banner-header-right">
+            <div class="glass-box">
+                <h2 class="dept-title" id="schoolNameText">{% if lang == 'ar' %}مدرسة جيرن يافور{% else %}JERN YAFOOR SCHOOL{% endif %}</h2>
+                <span class="dept-subtitle" id="charterText">{% if lang == 'ar' %}المدارس المستقلة{% else %}CHARTER SCHOOLS{% endif %}</span>
+            </div>
+        </div>
+        </div>
+
+        <h1>{% if lang == 'ar' %}ورش <span>المعلمين</span>{% else %}Teacher <span>Workshops</span>{% endif %}</h1>
+        <p>{% if lang == 'ar' %}اختر ورشة واحدة للحضور. يمكن لكل معلم التسجيل في ورشة واحدة فقط.{% else %}Choose one workshop to attend. Each teacher may register for only one workshop.{% endif %}</p>
+        <div class="hero-stats">
+            <div class="hero-stat">
+                <span class="num">{{ workshops|length }}</span>
+                <span class="label">{% if lang == 'ar' %}ورش{% else %}Workshops{% endif %}</span>
+            </div>
+            <div class="hero-stat">
+                <span class="num" id="totalRegistrationsHero">{{ total_registrations }}</span>
+                <span class="label">{% if lang == 'ar' %}مسجّل{% else %}Registered{% endif %}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Flash Messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="flash-message {{ category }}">
+          <i class="fa-solid {% if category == 'success' %}fa-circle-check{% elif category == 'info' %}fa-circle-info{% else %}fa-triangle-exclamation{% endif %}"></i>
+          {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+<!-- Registration CTA Banner -->
+<div class="registration-cta">
+    <div class="cta-content">
+        <div class="cta-icon">
+            <i class="fa-solid fa-clipboard-check"></i>
+        </div>
+        <h2>{% if lang == 'ar' %}سجّل في ورشتك الآن{% else %}Register for Your Workshop Now{% endif %}</h2>
+        <p>{% if lang == 'ar' %}اختر ورشة واحدة من الخمس ورق المتاحة واضغط "سجّل الآن"{% else %}Choose one workshop from the 5 available and click "Register Now"{% endif %}</p>
+        <a href="#workshops" class="cta-button">
+            <i class="fa-solid fa-arrow-down"></i> {% if lang == 'ar' %}تصفح الورش{% else %}Browse Workshops{% endif %}
+        </a>
+    </div>
+</div>
+
+<!-- Workshops Section - Landscape -->
+<div class="section-title-wrap" id="workshops">
+    <h2 class="section-title">{% if lang == 'ar' %}الورش <span class="text-gradient">المتاحة</span>{% else %}Available <span class="text-gradient">Workshops</span>{% endif %}</h2>
+</div>
+
+<div class="workshops-grid-landscape">
+    {% for ws in workshops %}
+    <div class="glass-card workshop-card-landscape {{ ws.color_class }}">
+        <div class="workshop-icon">
+            <i class="fa-solid {{ ws.icon_class }}"></i>
+        </div>
+        <div class="workshop-details">
+            <h3>{% if lang == 'ar' %}{{ ws.title_ar }}{% else %}{{ ws.title }}{% endif %}</h3>
+            <div class="instructor">
+                <i class="fa-solid fa-chalkboard-user"></i> {{ ws.instructor }}
+            </div>
+            <div class="participant-count">
+                <i class="fa-solid fa-users"></i>
+                <span>{{ ws.participant_count }}</span>
+                <small>{% if lang == 'ar' %}مسجّل{% else %}registered{% endif %}</small>
+            </div>
+            <p>{% if lang == 'ar' %}{{ ws.description_ar }}{% else %}{{ ws.description }}{% endif %}</p>
+            <div class="tech-tags">
+                {% for tech in ws.tech_stack.split(',') %}
+                <span>{{ tech.strip() }}</span>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="workshop-action">
+            <div class="register-btn-wrapper">
+                <span class="register-badge">{{ ws.participant_count }} {% if lang == 'ar' %}مسجل{% else %}REGISTERED{% endif %}</span>
+                <a href="javascript:void(0)" class="register-btn" data-workshop-id="{{ ws.id }}" data-workshop-title="{% if lang == 'ar' %}{{ ws.title_ar }}{% else %}{{ ws.title }}{% endif %}" data-workshop-instructor="{{ ws.instructor }}">
+                    <i class="fa-solid fa-user-plus"></i> {% if lang == 'ar' %}سجّل الآن{% else %}Register Now{% endif %}
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Registration Board -->
+<div class="registration-board" id="registrationBoard">
+    <div class="board-header">
+        <h2 class="text-gradient">{% if lang == 'ar' %}لوحة التسجيلات{% else %}Registration Board{% endif %}</h2>
+        <span class="board-count"><span id="totalRegistrationsBoard">{{ total_registrations }}</span> {% if lang == 'ar' %}إجمالي{% else %}total{% endif %}</span>
+    </div>
+    
+    <div class="board-workshops-list">
+        {% if workshops %}
+            {% for ws in workshops %}
+            <div class="board-workshop-section" data-workshop-id="{{ ws.id }}">
+                <div class="board-workshop-header {{ ws.color_class }}">
+                    <div class="board-workshop-icon">
+                        <i class="fa-solid {{ ws.icon_class }}"></i>
+                    </div>
+                    <div class="board-workshop-info">
+                        <h3>{% if lang == 'ar' %}{{ ws.title_ar }}{% else %}{{ ws.title }}{% endif %}</h3>
+                        <p class="instructor">{% if lang == 'ar' %}المدرب:{% else %}Instructor:{% endif %} {{ ws.instructor }}</p>
+                    </div>
+                    <div class="board-workshop-count">
+                        <span class="count-badge">{{ ws.participant_count }}</span>
+                        <small>{% if lang == 'ar' %}مسجل{% else %}registered{% endif %}</small>
+                    </div>
+                </div>
+                
+                <div class="board-participants">
+                    {% set workshop_regs = registrations | selectattr('workshop_id', 'equalto', ws.id) | list %}
+                    {% if workshop_regs %}
+                        {% for reg in workshop_regs %}
+                        <div class="participant-row" data-email="{{ reg.email }}">
+                            <div class="participant-avatar">
+                                <i class="fa-solid fa-user"></i>
+                            </div>
+                            <div class="participant-info">
+                                <div class="participant-name">{{ reg.name }}</div>
+                                <div class="participant-email">{{ reg.email }}</div>
+                            </div>
+                            <div class="participant-time">
+                                {% if reg.updated_at %}
+                                    <span class="time-badge">{{ reg.updated_at.strftime('%m/%d %H:%M') }}</span>
+                                {% else %}
+                                    <span class="time-badge">{{ reg.timestamp.strftime('%m/%d %H:%M') }}</span>
+                                {% endif %}
+                            </div>
+                            {% if session.get('registered_email') and session.get('registered_email')|lower == reg.email|lower %}
+                            <button class="btn-cancel-reg" onclick="cancelRegistration('{{ reg.email }}', '{{ reg.name }}')" title="{% if lang == 'ar' %}إلغاء التسجيل{% else %}Cancel Registration{% endif %}">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="no-participants">
+                            <i class="fa-solid fa-user-clock"></i>
+                            <span>{% if lang == 'ar' %}لا يوجد مسجلين بعد{% else %}No registrations yet{% endif %}</span>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="board-empty">
+                <i class="fa-solid fa-clipboard-list"></i>
+                <p>{% if lang == 'ar' %}لا توجد تسجيلات بعد{% else %}No registrations yet{% endif %}</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Footer -->
+<footer class="footer" style="text-align: center; margin-top: 5rem; padding: 3rem 0; border-top: 1px solid rgba(255,255,255,0.05);">
+    <div class="container">
+        <p class="neon-footer-dev">
+            {% if lang == 'ar' %}تم التطوير بواسطة أمين{% else %}Developed by Ameen{% endif %} © 2026
+        </p>
+    </div>
+</footer>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Language context
+const currentLang = '{{ lang }}';
+
+// Track current session's registered email
+let sessionEmail = "{{ session.get('registered_email', '') }}";
+
+// Global variable to track if we just registered
+let justRegistered = false;
+
+// Modal functions
+function openModal(workshopId, title, instructor) {
+    const modal = document.getElementById('registrationModal');
+    document.getElementById('modalWorkshopId').value = workshopId;
+    document.getElementById('previewWorkshopTitle').textContent = title;
+    const previewInstructor = document.getElementById('previewWorkshopInstructor');
+    if (previewInstructor && instructor) previewInstructor.textContent = instructor;
+    else if (previewInstructor) previewInstructor.textContent = '';
+    
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    
+    setTimeout(function() {
+        document.getElementById('modalName').focus();
+    }, 300);
+}
+
+function closeModal() {
+    const modal = document.getElementById('registrationModal');
+    modal.classList.remove('active');
+    document.body.style.overflow = 'auto';
+    document.getElementById('modalRegistrationForm').reset();
+    document.getElementById('modalWorkshopId').value = '';
+}
+
+function closeConfirmationModal() {
+    const modal = document.getElementById('confirmationModal');
+    modal.classList.remove('active');
+    document.body.style.overflow = 'auto';
+}
+
+function showConfirmation(title, message, isUpdate) {
+    const modal = document.getElementById('confirmationModal');
+    const titleEl = document.getElementById('confirmationTitle');
+    const messageEl = document.getElementById('confirmationMessage');
+    
+    titleEl.textContent = title;
+    messageEl.textContent = message;
+    
+    if (isUpdate) {
+        modal.classList.add('modal-update');
+    } else {
+        modal.classList.remove('modal-update');
+    }
+    
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    
+    // Auto-close after 3 seconds
+    setTimeout(function() {
+        if (modal.classList.contains('active')) {
+            closeConfirmationModal();
+        }
+    }, 3000);
+}
+
+// Close modals on overlay click
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', function(e) {
+        if (e.target === overlay) {
+            closeModal();
+            closeConfirmationModal();
+        }
+    });
+});
+
+// Close modals on escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeModal();
+        closeConfirmationModal();
+    }
+});
+
+// Workshop card click handlers
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.register-btn').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const workshopId = this.getAttribute('data-workshop-id');
+            const title = this.getAttribute('data-workshop-title');
+            const instructor = this.getAttribute('data-workshop-instructor');
+            openModal(workshopId, title, instructor);
+        });
+    });
+});
+
+let pendingRegistration = null;
+
+function escapeHtml(str) {
+    return str.replace(/&/g, '&amp;')
+              .replace(/</g, '&lt;')
+              .replace(/>/g, '&gt;')
+              .replace(/"/g, '&quot;')
+              .replace(/'/g, '&#039;');
+}
+
+function updateDynamicUI(data) {
+    // 1. Update participant counts on cards and board
+    if (data.updated_counts) {
+        for (const [wsId, count] of Object.entries(data.updated_counts)) {
+            // Card counts
+            const cardBtn = document.querySelector(`.register-btn[data-workshop-id="${wsId}"]`);
+            if (cardBtn) {
+                const card = cardBtn.closest('.workshop-card-landscape');
+                if (card) {
+                    const countSpan = card.querySelector('.participant-count span');
+                    if (countSpan) countSpan.textContent = count;
+                    const badge = card.querySelector('.register-badge');
+                    if (badge) {
+                        badge.textContent = `${count} ${currentLang === 'ar' ? 'مسجل' : 'REGISTERED'}`;
+                    }
+                }
+            }
+            
+            // Board counts
+            const boardSection = document.querySelector(`.board-workshop-section[data-workshop-id="${wsId}"]`);
+            if (boardSection) {
+                const countBadge = boardSection.querySelector('.count-badge');
+                if (countBadge) countBadge.textContent = count;
+            }
+        }
+    }
+    
+    // 2. Update total registrations
+    const heroTotal = document.getElementById('totalRegistrationsHero');
+    if (heroTotal) heroTotal.textContent = data.total_registrations;
+    const boardTotal = document.getElementById('totalRegistrationsBoard');
+    if (boardTotal) boardTotal.textContent = data.total_registrations;
+    
+    // 3. Update participant list on the board
+    const newSection = document.querySelector(`.board-workshop-section[data-workshop-id="${data.new_workshop_id}"]`);
+    if (newSection) {
+        const boardParticipants = newSection.querySelector('.board-participants');
+        if (boardParticipants) {
+            // Remove no-participants if it exists
+            const noPart = boardParticipants.querySelector('.no-participants');
+            if (noPart) noPart.remove();
+            
+            if (data.is_new) {
+                // Prepend new row
+                const row = document.createElement('div');
+                row.className = 'participant-row';
+                row.setAttribute('data-email', data.participant_email);
+                row.innerHTML = `
+                    <div class="participant-avatar">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                    <div class="participant-info">
+                        <div class="participant-name">${escapeHtml(data.participant_name)}</div>
+                        <div class="participant-email">${escapeHtml(data.participant_email)}</div>
+                    </div>
+                    <div class="participant-time">
+                        <span class="time-badge">${data.timestamp}</span>
+                    </div>
+                    <button class="btn-cancel-reg" onclick="cancelRegistration('${data.participant_email}', '${escapeHtml(data.participant_name)}')" title="${currentLang === 'ar' ? 'إلغاء التسجيل' : 'Cancel Registration'}">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                `;
+                boardParticipants.insertBefore(row, boardParticipants.firstChild);
+            } else {
+                // It's an update (either same workshop or different)
+                const existingRow = document.querySelector(`.participant-row[data-email="${data.participant_email}"]`);
+                if (existingRow) {
+                    // Update name and time
+                    const nameEl = existingRow.querySelector('.participant-name');
+                    if (nameEl) nameEl.textContent = data.participant_name;
+                    const timeBadge = existingRow.querySelector('.time-badge');
+                    if (timeBadge) timeBadge.textContent = data.timestamp;
+                    
+                    if (data.old_workshop_id && data.old_workshop_id !== data.new_workshop_id) {
+                        // Moved workshops!
+                        const oldSection = document.querySelector(`.board-workshop-section[data-workshop-id="${data.old_workshop_id}"]`);
+                        existingRow.remove();
+                        
+                        // If old section has no participant rows left, add no-participants
+                        if (oldSection) {
+                            const oldParticipants = oldSection.querySelector('.board-participants');
+                            if (oldParticipants && oldParticipants.querySelectorAll('.participant-row').length === 0) {
+                                oldParticipants.innerHTML = currentLang === 'ar'
+                                    ? `<div class="no-participants"><i class="fa-solid fa-user-clock"></i><span>لا يوجد مسجلين بعد</span></div>`
+                                    : `<div class="no-participants"><i class="fa-solid fa-user-clock"></i><span>No registrations yet</span></div>`;
+                            }
+                        }
+                        
+                        // Prepend to new section
+                        boardParticipants.insertBefore(existingRow, boardParticipants.firstChild);
+                    }
+                } else {
+                    // Fallback: create row if missing
+                    const row = document.createElement('div');
+                    row.className = 'participant-row';
+                    row.setAttribute('data-email', data.participant_email);
+                    row.innerHTML = `
+                        <div class="participant-avatar">
+                            <i class="fa-solid fa-user"></i>
+                        </div>
+                        <div class="participant-info">
+                            <div class="participant-name">${escapeHtml(data.participant_name)}</div>
+                            <div class="participant-email">${escapeHtml(data.participant_email)}</div>
+                        </div>
+                        <div class="participant-time">
+                            <span class="time-badge">${data.timestamp}</span>
+                        </div>
+                        <button class="btn-cancel-reg" onclick="cancelRegistration('${data.participant_email}', '${escapeHtml(data.participant_name)}')" title="${currentLang === 'ar' ? 'إلغاء التسجيل' : 'Cancel Registration'}">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    `;
+                    boardParticipants.insertBefore(row, boardParticipants.firstChild);
+                }
+            }
+        }
+    }
+}
+
+function submitRegistrationAjax(workshopId, name, email) {
+    const submitBtn = document.querySelector('#modalRegistrationForm button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
+    submitBtn.disabled = true;
+
+    fetch('/register_ajax', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: `workshop_id=${encodeURIComponent(workshopId)}&name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}`
+    })
+    .then(r => r.json())
+    .then(data => {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+        
+        if (data.success) {
+            sessionEmail = data.participant_email;
+            closeModal();
+            
+            // Determine success message
+            let successTitle = currentLang === 'ar' ? 'تم التسجيل بنجاح!' : 'Registration Successful!';
+            let successMsg = '';
+            
+            if (data.is_new) {
+                successMsg = currentLang === 'ar' 
+                    ? `تم تأكيد التسجيل في "${data.new_workshop_title}"` 
+                    : `registration has been confirmed into ${data.new_workshop_title}`;
+            } else {
+                successMsg = currentLang === 'ar' 
+                    ? `تم تغيير التسجيل إلى "${data.new_workshop_title}"` 
+                    : `registration has been changed to ${data.new_workshop_title}`;
+            }
+            
+            // Show confirmation popup
+            showConfirmation(successTitle, successMsg, !data.is_new);
+            
+            // Update counts and registration board
+            updateDynamicUI(data);
+            
+            // Scroll to registration board after registration
+            setTimeout(function() {
+                const board = document.getElementById('registrationBoard');
+                if (board) {
+                    board.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, 3500);
+        } else {
+            alert(data.message || 'An error occurred.');
+        }
+    })
+    .catch(err => {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+        console.error('Registration failed:', err);
+        alert('An error occurred. Please try again.');
+    });
+}
+
+// Handle form submission from modal
+document.getElementById('modalRegistrationForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const workshopId = document.getElementById('modalWorkshopId').value;
+    const name = document.getElementById('modalName').value.trim();
+    const email = document.getElementById('modalEmail').value.trim();
+    
+    if (!workshopId || !name || !email) {
+        alert('Please fill in all fields');
+        return;
+    }
+    
+    // Check session-based ownership on submit
+    if (sessionEmail && sessionEmail.toLowerCase() !== email.toLowerCase()) {
+        alert(currentLang === 'ar' 
+            ? 'يمكنك تعديل تسجيلك الخاص فقط.' 
+            : 'You can only modify your own registration.');
+        return;
+    }
+    
+    // Check if email already registered
+    fetch('/check_registration', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: 'email=' + encodeURIComponent(email)
+    })
+    .then(r => r.json())
+    .then(data => {
+        const newWorkshopId = parseInt(workshopId);
+        
+        // Find new workshop title to display in confirmation message
+        const newWorkshopBtn = document.querySelector(`.register-btn[data-workshop-id="${workshopId}"]`);
+        const newWorkshopTitle = newWorkshopBtn ? newWorkshopBtn.getAttribute('data-workshop-title') : '';
+
+        if (data.exists) {
+            // If the email exists, but session does not match it
+            if (!sessionEmail || sessionEmail.toLowerCase() !== email.toLowerCase()) {
+                alert(currentLang === 'ar'
+                    ? 'هذا البريد الإلكتروني مسجل بالفعل لمستخدم آخر.'
+                    : 'This email is already registered by another user.');
+                return;
+            }
+            
+            if (data.workshop_id !== newWorkshopId) {
+                // Show change confirmation modal
+                pendingRegistration = { workshopId: newWorkshopId, name, email };
+                
+                const changeMessage = currentLang === 'ar'
+                    ? `لقد سجلت في ..${data.workshop_title} وقمت حالياً بتغيير تسجيلك إلى ${newWorkshopTitle} هل تؤكد؟`
+                    : `you enrolled in ..${data.workshop_title} and you currently changed your enrollment to ${newWorkshopTitle} are you confirm`;
+                    
+                document.getElementById('changeMessage').textContent = changeMessage;
+                document.getElementById('changeModal').classList.add('active');
+                document.body.style.overflow = 'hidden';
+            } else {
+                // Same workshop update
+                submitRegistrationAjax(workshopId, name, email);
+            }
+        } else {
+            // New registration
+            submitRegistrationAjax(workshopId, name, email);
+        }
+    })
+    .catch(err => {
+        console.error('Check registration failed:', err);
+        // Fallback: submit directly
+        submitRegistrationAjax(workshopId, name, email);
+    });
+});
+
+// Confirm change button
+document.getElementById('confirmChangeBtn').addEventListener('click', function() {
+    if (pendingRegistration) {
+        const oldPending = pendingRegistration;
+        closeChangeModal();
+        submitRegistrationAjax(oldPending.workshopId, oldPending.name, oldPending.email);
+    }
+});
+
+function closeChangeModal() {
+    const modal = document.getElementById('changeModal');
+    modal.classList.remove('active');
+    document.body.style.overflow = 'auto';
+    pendingRegistration = null;
+}
+
+function cancelRegistration(email, name) {
+    if (!sessionEmail || sessionEmail.toLowerCase() !== email.toLowerCase()) {
+        alert(currentLang === 'ar' 
+            ? 'يمكنك إلغاء تسجيلك الخاص فقط.' 
+            : 'You can only cancel your own registration.');
+        return;
+    }
+
+    const confirmMsg = currentLang === 'ar' 
+        ? `هل أنت متأكد من إلغاء تسجيل "${name}"؟` 
+        : `Are you sure you want to cancel the registration for "${name}"?`;
+        
+    if (!confirm(confirmMsg)) return;
+
+    fetch('/cancel_registration', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: 'email=' + encodeURIComponent(email)
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            sessionEmail = '';
+            // Show cancellation success popup
+            const successTitle = currentLang === 'ar' ? 'تم إلغاء التسجيل!' : 'Registration Cancelled!';
+            const successMsg = currentLang === 'ar' 
+                ? `تم إلغاء التسجيل في "${data.deleted_workshop_title}" بنجاح!` 
+                : `registration for "${data.deleted_workshop_title}" has been cancelled`;
+                
+            showConfirmation(successTitle, successMsg, false);
+            
+            // Remove row from DOM
+            const row = document.querySelector(`.participant-row[data-email="${email}"]`);
+            if (row) {
+                const parent = row.parentNode;
+                row.remove();
+                
+                // If section becomes empty, add no-participants placeholder
+                if (parent && parent.querySelectorAll('.participant-row').length === 0) {
+                    parent.innerHTML = currentLang === 'ar'
+                        ? `<div class="no-participants"><i class="fa-solid fa-user-clock"></i><span>لا يوجد مسجلين بعد</span></div>`
+                        : `<div class="no-participants"><i class="fa-solid fa-user-clock"></i><span>No registrations yet</span></div>`;
+                }
+            }
+            
+            // Update counts on cards and board
+            if (data.updated_counts) {
+                for (const [wsId, count] of Object.entries(data.updated_counts)) {
+                    // Card counts
+                    const cardBtn = document.querySelector(`.register-btn[data-workshop-id="${wsId}"]`);
+                    if (cardBtn) {
+                        const card = cardBtn.closest('.workshop-card-landscape');
+                        if (card) {
+                            const countSpan = card.querySelector('.participant-count span');
+                            if (countSpan) countSpan.textContent = count;
+                            const badge = card.querySelector('.register-badge');
+                            if (badge) {
+                                badge.textContent = `${count} ${currentLang === 'ar' ? 'مسجل' : 'REGISTERED'}`;
+                            }
+                        }
+                    }
+                    
+                    // Board counts
+                    const boardSection = document.querySelector(`.board-workshop-section[data-workshop-id="${wsId}"]`);
+                    if (boardSection) {
+                        const countBadge = boardSection.querySelector('.count-badge');
+                        if (countBadge) countBadge.textContent = count;
+                    }
+                }
+            }
+            
+            // Update total registrations
+            const heroTotal = document.getElementById('totalRegistrationsHero');
+            if (heroTotal) heroTotal.textContent = data.total_registrations;
+            const boardTotal = document.getElementById('totalRegistrationsBoard');
+            if (boardTotal) boardTotal.textContent = data.total_registrations;
+        } else {
+            alert(data.message || 'An error occurred.');
+        }
+    })
+    .catch(err => {
+        console.error('Cancellation failed:', err);
+        alert('An error occurred. Please try again.');
+    });
+}
+
+// Check for flash messages and show confirmation modal
+window.addEventListener('load', function() {
+    const flashMessages = document.querySelectorAll('.flash-message');
+    
+    // Check if there's a success message to show in confirmation
+    let hasSuccessMessage = false;
+    let successMessageText = '';
+    let successMessageTitle = '';
+    
+    flashMessages.forEach(function(msg) {
+        if (msg.classList.contains('success')) {
+            hasSuccessMessage = true;
+            successMessageText = msg.textContent.trim();
+            successMessageTitle = document.getElementById('confirmationTitle').textContent;
+        }
+        // Animate flash messages in
+        msg.style.animation = 'fadeInUp 0.5s ease';
+    });
+    
+    // If there's a success message, show confirmation modal after a short delay
+    if (hasSuccessMessage) {
+        setTimeout(function() {
+            showConfirmation(successMessageTitle, successMessageText, false);
+        }, 1500);
+        
+        // Scroll to registration board after registration
+        setTimeout(function() {
+            const board = document.getElementById('registrationBoard');
+            if (board) {
+                board.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }, 2500);
+    }
+});
+
+// Smooth scroll
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+});
+
+// Split and prepare text for letter flying animations on DOMContentLoaded
+function prepareTextForAssembly(elementId) {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+    
+    const text = el.textContent.trim();
+    el.innerHTML = '';
+    
+    const isArabic = (currentLang === 'ar');
+    const items = isArabic ? text.split(/\s+/) : [...text];
+    
+    items.forEach((item, index) => {
+        if (isArabic && index > 0) {
+            const spaceSpan = document.createElement('span');
+            spaceSpan.innerHTML = '&nbsp;';
+            spaceSpan.style.display = 'inline-block';
+            el.appendChild(spaceSpan);
+        }
+        
+        const span = document.createElement('span');
+        if (!isArabic && item === ' ') {
+            span.innerHTML = '&nbsp;';
+        } else {
+            span.textContent = item;
+        }
+        span.className = 'scatter-letter';
+        span.style.display = 'inline-block';
+        
+        // Random starting positions in 3D space
+        const randomX = (Math.random() - 0.5) * 600; // -300px to 300px
+        const randomY = (Math.random() - 0.5) * 600;
+        const randomZ = (Math.random() - 0.5) * 400;
+        const randomRot = (Math.random() - 0.5) * 720; // -360deg to 360deg
+        
+        span.style.setProperty('--rx', `${randomX}px`);
+        span.style.setProperty('--ry', `${randomY}px`);
+        span.style.setProperty('--rz', `${randomZ}px`);
+        span.style.setProperty('--rrot', `${randomRot}deg`);
+        span.style.transitionDelay = `${index * (isArabic ? 0.15 : 0.03)}s`;
+        
+        el.appendChild(span);
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    prepareTextForAssembly('englishDeptText');
+    prepareTextForAssembly('schoolNameText');
+    prepareTextForAssembly('charterText');
+    
+    // Trigger assembly animation after a small delay
+    setTimeout(function() {
+        const englishDept = document.getElementById('englishDeptText');
+        const schoolName = document.getElementById('schoolNameText');
+        const charter = document.getElementById('charterText');
+        
+        if (englishDept) englishDept.classList.add('assembled');
+        if (schoolName) schoolName.classList.add('assembled');
+        if (charter) charter.classList.add('assembled');
+    }, 300);
+});
+</script>
+{% endblock %}

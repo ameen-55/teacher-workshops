@@ -1,0 +1,783 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if lang == 'ar' %}لوحة تحكم المسؤول{% else %}Admin Control Panel{% endif %}{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Tab Styling */
+    .admin-tabs {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        padding-bottom: 1rem;
+    }
+    .admin-tab-btn {
+        background: transparent;
+        border: none;
+        color: rgba(255,255,255,0.6);
+        padding: 0.8rem 1.8rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        border-radius: 12px;
+        transition: var(--transition);
+    }
+    .admin-tab-btn:hover {
+        background: rgba(255,255,255,0.05);
+        color: white;
+    }
+    .admin-tab-btn.active {
+        background: linear-gradient(135deg, #a78bfa, #667eea);
+        color: white;
+        box-shadow: 0 8px 20px rgba(102,126,234,0.3);
+    }
+    .tab-content {
+        display: none;
+        animation: fadeIn 0.5s ease;
+    }
+    .tab-content.active {
+        display: block;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(15px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Table & Stats Styling */
+    .admin-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+    }
+    .admin-stat-card {
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 20px;
+        padding: 1.8rem;
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        transition: var(--transition);
+    }
+    .admin-stat-card:hover {
+        transform: translateY(-5px);
+        background: rgba(255,255,255,0.08);
+    }
+    .admin-stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        color: white;
+    }
+    .admin-stat-info .stat-num {
+        font-size: 2.2rem;
+        font-weight: 800;
+        line-height: 1.1;
+        font-family: var(--font-mono);
+    }
+    .admin-stat-info .stat-label {
+        font-size: 0.95rem;
+        color: rgba(255,255,255,0.5);
+        margin-top: 0.2rem;
+    }
+
+    .admin-table-controls {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    .admin-search-wrapper {
+        position: relative;
+        max-width: 400px;
+        width: 100%;
+    }
+    .admin-search-wrapper i {
+        position: absolute;
+        left: 1.2rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: rgba(255,255,255,0.4);
+    }
+    .admin-search-input {
+        padding-left: 3rem !important;
+        background: rgba(0,0,0,0.3) !important;
+    }
+
+    /* Admin Data Table */
+    .admin-table-container {
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 24px;
+        overflow: hidden;
+        margin-bottom: 3rem;
+    }
+    .admin-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+    }
+    html[dir="rtl"] .admin-table {
+        text-align: right;
+    }
+    .admin-table th {
+        background: rgba(255,255,255,0.05);
+        padding: 1.2rem 1.5rem;
+        font-weight: 700;
+        font-size: 1rem;
+        color: rgba(255,255,255,0.8);
+        border-bottom: 2px solid rgba(255,255,255,0.08);
+    }
+    .admin-table td {
+        padding: 1.2rem 1.5rem;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+        vertical-align: middle;
+        font-size: 1rem;
+    }
+    .admin-table tr:hover td {
+        background: rgba(255,255,255,0.02);
+    }
+    .workshop-badge {
+        display: inline-block;
+        padding: 0.4rem 0.8rem;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    /* Workshop Card Grid */
+    .admin-workshops-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 2rem;
+    }
+    .admin-ws-card {
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 24px;
+        padding: 2rem;
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+    .admin-ws-card:hover {
+        transform: translateY(-5px);
+        border-color: rgba(255,255,255,0.15);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    }
+    .admin-ws-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+    .admin-ws-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+
+    /* Buttons & Modals */
+    .btn-action {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        border: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: var(--transition);
+        font-size: 1rem;
+        color: white;
+    }
+    .btn-edit { background: rgba(102,126,234,0.2); border: 1px solid rgba(102,126,234,0.4); }
+    .btn-edit:hover { background: rgba(102,126,234,0.4); transform: scale(1.1); }
+    .btn-delete { background: rgba(239,68,68,0.2); border: 1px solid rgba(239,68,68,0.4); }
+    .btn-delete:hover { background: rgba(239,68,68,0.4); transform: scale(1.1); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 10rem;">
+    <!-- Dashboard Header -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem; flex-wrap: wrap; gap: 1.5rem;">
+        <div>
+            <span style="font-weight: 700; color: var(--accent-purple); text-transform: uppercase; letter-spacing: 2px;">
+                {% if lang == 'ar' %}لوحة المسؤول{% else %}ADMIN CONTROL PANEL{% endif %}
+            </span>
+            <h1 style="font-size: 3rem; font-weight: 900; margin-top: 0.5rem; background: linear-gradient(135deg, #fff 0%, #a78bfa 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                {% if lang == 'ar' %}لوحة التحكم بالورش{% else %}Workshop Manager{% endif %}
+            </h1>
+        </div>
+        <div style="display: flex; gap: 1rem;">
+            <a href="{{ url_for('main.home') }}" class="btn btn-secondary" style="border-radius: 12px; font-weight: 600;">
+                <i class="fa-solid fa-globe"></i> {% if lang == 'ar' %}عرض الموقع{% else %}View Site{% endif %}
+            </a>
+            <a href="{{ url_for('main.admin_logout') }}" class="btn btn-primary" style="background: rgba(239,68,68,0.2); border: 1px solid rgba(239,68,68,0.4); color: #ef4444; border-radius: 12px; font-weight: 600;">
+                <i class="fa-solid fa-right-from-bracket"></i> {% if lang == 'ar' %}خروج{% else %}Logout{% endif %}
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="admin-stats-grid">
+        <!-- Stat Card 1 -->
+        <div class="admin-stat-card">
+            <div class="admin-stat-icon" style="background: rgba(167,139,250,0.2); border: 1px solid rgba(167,139,250,0.3); color: var(--accent-purple);">
+                <i class="fa-solid fa-users"></i>
+            </div>
+            <div class="admin-stat-info">
+                <div class="stat-num" id="statTotalRegistrations">{{ total_registrations }}</div>
+                <div class="stat-label">{% if lang == 'ar' %}إجمالي المسجلين{% else %}Total Registrants{% endif %}</div>
+            </div>
+        </div>
+        <!-- Stat Card 2 -->
+        <div class="admin-stat-card">
+            <div class="admin-stat-icon" style="background: rgba(102,126,234,0.2); border: 1px solid rgba(102,126,234,0.3); color: var(--accent-blue);">
+                <i class="fa-solid fa-chalkboard-user"></i>
+            </div>
+            <div class="admin-stat-info">
+                <div class="stat-num">{{ workshops|length }}</div>
+                <div class="stat-label">{% if lang == 'ar' %}ورش العمل المتاحة{% else %}Active Workshops{% endif %}</div>
+            </div>
+        </div>
+        <!-- Stat Card 3 -->
+        <div class="admin-stat-card">
+            <div class="admin-stat-icon" style="background: rgba(34,197,94,0.2); border: 1px solid rgba(34,197,94,0.3); color: #22c55e;">
+                <i class="fa-solid fa-percent"></i>
+            </div>
+            <div class="admin-stat-info">
+                {% set capacity = workshops|length * 30 %}
+                {% set percent = (total_registrations / capacity * 100)|round(1) if capacity > 0 else 0 %}
+                <div class="stat-num" id="statCapacityPercent">{{ percent }}%</div>
+                <div class="stat-label">{% if lang == 'ar' %}نسبة الامتلاء{% else %}Occupancy Rate{% endif %}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Navigation Tabs -->
+    <div class="admin-tabs">
+        <button class="admin-tab-btn active" onclick="switchTab('tabParticipants')">
+            <i class="fa-solid fa-table-list"></i> {% if lang == 'ar' %}إدارة المشاركين{% else %}Manage Participants{% endif %}
+        </button>
+        <button class="admin-tab-btn" onclick="switchTab('tabWorkshops')">
+            <i class="fa-solid fa-graduation-cap"></i> {% if lang == 'ar' %}تعديل ورش العمل{% else %}Edit Workshops{% endif %}
+        </button>
+    </div>
+
+    <!-- TAB: Participants -->
+    <div id="tabParticipants" class="tab-content active">
+        <div class="admin-table-controls">
+            <div class="admin-search-wrapper">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="adminSearch" class="form-control admin-search-input" placeholder="{% if lang == 'ar' %}ابحث عن اسم، بريد إلكتروني...{% else %}Search by name, email, workshop...{% endif %}">
+            </div>
+            <button class="btn btn-primary" onclick="openAddParticipantModal()" style="border-radius: 12px; padding: 0.8rem 1.8rem; font-weight: 600;">
+                <i class="fa-solid fa-user-plus"></i> {% if lang == 'ar' %}إضافة معلم جديد{% else %}Add Participant{% endif %}
+            </button>
+        </div>
+
+        <div class="admin-table-container">
+            <table class="admin-table" id="participantsTable">
+                <thead>
+                    <tr>
+                        <th>{% if lang == 'ar' %}الاسم الكامل{% else %}Full Name{% endif %}</th>
+                        <th>{% if lang == 'ar' %}البريد الإلكتروني{% else %}Email Address{% endif %}</th>
+                        <th>{% if lang == 'ar' %}ورشة العمل{% else %}Workshop{% endif %}</th>
+                        <th>{% if lang == 'ar' %}تاريخ التسجيل{% else %}Registration Date{% endif %}</th>
+                        <th style="width: 120px; text-align: center;">{% if lang == 'ar' %}الإجراءات{% else %}Actions{% endif %}</th>
+                    </tr>
+                </thead>
+                <tbody id="participantsTableBody">
+                    {% if registrations %}
+                        {% for reg in registrations %}
+                        {% set ws = workshops | selectattr('id', 'equalto', reg.workshop_id) | first %}
+                        <tr data-id="{{ reg.id }}" data-workshop-id="{{ reg.workshop_id }}">
+                            <td class="participant-name-col">{{ reg.name }}</td>
+                            <td class="participant-email-col">{{ reg.email }}</td>
+                            <td class="participant-workshop-col">
+                                <span class="workshop-badge {{ ws.color_class if ws else 'workshop-purple' }}">
+                                    {% if lang == 'ar' %}{{ ws.title_ar if ws else 'غير معروف' }}{% else %}{{ ws.title if ws else 'Unknown' }}{% endif %}
+                                </span>
+                            </td>
+                            <td>
+                                {% if reg.updated_at %}
+                                    {{ reg.updated_at.strftime('%Y-%m-%d %H:%M') }}
+                                {% else %}
+                                    {{ reg.timestamp.strftime('%Y-%m-%d %H:%M') }}
+                                {% endif %}
+                            </td>
+                            <td style="text-align: center; display: flex; justify-content: center; gap: 0.5rem; align-items: center; height: 100%;">
+                                <button class="btn-action btn-edit" onclick="openEditParticipantModal({{ reg.id }}, '{{ reg.name|escape }}', '{{ reg.email|escape }}', {{ reg.workshop_id }})" title="{% if lang == 'ar' %}تعديل{% else %}Edit{% endif %}">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
+                                <button class="btn-action btn-delete" onclick="deleteParticipant({{ reg.id }})" title="{% if lang == 'ar' %}حذف{% else %}Delete{% endif %}">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr id="emptyTablePlaceholder">
+                            <td colspan="5" style="text-align: center; padding: 3rem; color: rgba(255,255,255,0.4);">
+                                <i class="fa-solid fa-user-clock" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
+                                {% if lang == 'ar' %}لا توجد تسجيلات بعد{% else %}No participants registered yet.{% endif %}
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- TAB: Workshops -->
+    <div id="tabWorkshops" class="tab-content">
+        <div class="admin-workshops-grid">
+            {% for ws in workshops %}
+            <div class="admin-ws-card" id="workshopCard-{{ ws.id }}">
+                <div class="admin-ws-header">
+                    <div class="admin-ws-icon {{ ws.color_class }}" style="color: white; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);">
+                        <i class="fa-solid {{ ws.icon_class }}"></i>
+                    </div>
+                    <button class="btn-action btn-edit" onclick="openEditWorkshopModal({{ ws.id }}, '{{ ws.title|escape }}', '{{ ws.title_ar|escape }}', '{{ ws.instructor|escape }}', '{{ ws.description|escape }}', '{{ ws.description_ar|escape }}', '{{ ws.tech_stack|escape }}')" title="{% if lang == 'ar' %}تعديل الورشة{% else %}Edit Workshop{% endif %}">
+                        <i class="fa-solid fa-pen"></i>
+                    </button>
+                </div>
+                <h3 class="ws-title-en" style="font-size: 1.3rem; font-weight: 800; margin-bottom: 0.3rem;">{{ ws.title }}</h3>
+                <h4 class="ws-title-ar" style="font-size: 1.1rem; font-weight: 700; color: rgba(255,255,255,0.7); margin-bottom: 0.8rem;">{{ ws.title_ar }}</h4>
+                <p class="ws-instructor" style="font-family: var(--font-mono); font-size: 0.9rem; color: var(--accent-purple); margin-bottom: 1rem;">
+                    <i class="fa-solid fa-chalkboard-user"></i> {{ ws.instructor }}
+                </p>
+                <p class="ws-desc-en" style="font-size: 0.95rem; color: rgba(255,255,255,0.6); line-height: 1.5; margin-bottom: 0.5rem; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">{{ ws.description }}</p>
+                <p class="ws-desc-ar" style="font-size: 0.9rem; color: rgba(255,255,255,0.5); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 1rem;">{{ ws.description_ar }}</p>
+                <div class="ws-tech-stack" style="display: flex; flex-wrap: wrap; gap: 0.4rem;">
+                    {% for tech in ws.tech_stack.split(',') %}
+                    <span style="font-size: 0.75rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 0.2rem 0.5rem; border-radius: 6px; font-family: var(--font-mono);">{{ tech.strip() }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: Add Participant -->
+<div class="modal-overlay" id="addParticipantModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">{% if lang == 'ar' %}إضافة معلم جديد{% else %}Add Participant{% endif %}</h3>
+            <button class="modal-close" onclick="closeAddParticipantModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="adminAddParticipantForm">
+                <div class="form-group">
+                    <label class="form-label">{% if lang == 'ar' %}الاسم الكامل{% else %}Full Name{% endif %}</label>
+                    <input type="text" id="addName" class="form-control" placeholder="e.g. Ahmad Hassan" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">{% if lang == 'ar' %}البريد الإلكتروني{% else %}Email Address{% endif %}</label>
+                    <input type="email" id="addEmail" class="form-control" placeholder="e.g. teacher@school.edu" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">{% if lang == 'ar' %}اختر ورشة العمل{% else %}Select Workshop{% endif %}</label>
+                    <select id="addWorkshopId" class="form-control" style="background: rgba(0,0,0,0.3); color: white;" required>
+                        <option value="">{% if lang == 'ar' %}اختر ورشة...{% else %}Choose workshop...{% endif %}</option>
+                        {% for ws in workshops %}
+                        <option value="{{ ws.id }}">{% if lang == 'ar' %}{{ ws.title_ar }}{% else %}{{ ws.title }}{% endif %}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">
+                    <i class="fa-solid fa-user-plus"></i> {% if lang == 'ar' %}إضافة وتسجيل{% else %}Register Participant{% endif %}
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: Edit Participant -->
+<div class="modal-overlay" id="editParticipantModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">{% if lang == 'ar' %}تعديل بيانات المشارك{% else %}Edit Participant{% endif %}</h3>
+            <button class="modal-close" onclick="closeEditParticipantModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="adminEditParticipantForm">
+                <input type="hidden" id="editRegId">
+                <div class="form-group">
+                    <label class="form-label">{% if lang == 'ar' %}الاسم الكامل{% else %}Full Name{% endif %}</label>
+                    <input type="text" id="editName" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">{% if lang == 'ar' %}البريد الإلكتروني{% else %}Email Address{% endif %}</label>
+                    <input type="email" id="editEmail" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">{% if lang == 'ar' %}اختر ورشة العمل{% else %}Select Workshop{% endif %}</label>
+                    <select id="editWorkshopId" class="form-control" style="background: rgba(0,0,0,0.3); color: white;" required>
+                        {% for ws in workshops %}
+                        <option value="{{ ws.id }}">{% if lang == 'ar' %}{{ ws.title_ar }}{% else %}{{ ws.title }}{% endif %}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">
+                    <i class="fa-solid fa-save"></i> {% if lang == 'ar' %}حفظ التغييرات{% else %}Save Changes{% endif %}
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: Edit Workshop -->
+<div class="modal-overlay" id="editWorkshopModal">
+    <div class="modal-content" style="max-width: 650px;">
+        <div class="modal-header">
+            <h3 class="modal-title">{% if lang == 'ar' %}تعديل بيانات الورشة{% else %}Edit Workshop Details{% endif %}</h3>
+            <button class="modal-close" onclick="closeEditWorkshopModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="adminEditWorkshopForm">
+                <input type="hidden" id="editWsId">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label">{% if lang == 'ar' %}عنوان الورشة (EN){% else %}Workshop Title (EN){% endif %}</label>
+                        <input type="text" id="editWsTitle" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">{% if lang == 'ar' %}عنوان الورشة (AR){% else %}Workshop Title (AR){% endif %}</label>
+                        <input type="text" id="editWsTitleAr" class="form-control" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">{% if lang == 'ar' %}المدرب / المدربون{% else %}Instructor(s){% endif %}</label>
+                    <input type="text" id="editWsInstructor" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">{% if lang == 'ar' %}الوصف (EN){% else %}Description (EN){% endif %}</label>
+                    <textarea id="editWsDescription" class="form-control" style="background: rgba(0,0,0,0.3); color: white; min-height: 80px;" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">{% if lang == 'ar' %}الوصف (AR){% else %}Description (AR){% endif %}</label>
+                    <textarea id="editWsDescriptionAr" class="form-control" style="background: rgba(0,0,0,0.3); color: white; min-height: 80px;" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">{% if lang == 'ar' %}التقنيات / المهارات المستهدفة (مفصولة بفواصل){% else %}Target Tech / Skills (Comma-separated){% endif %}</label>
+                    <input type="text" id="editWsTechStack" class="form-control" placeholder="e.g. AI Basics, No-Code Tools">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">
+                    <i class="fa-solid fa-save"></i> {% if lang == 'ar' %}حفظ الورشة{% else %}Update Workshop{% endif %}
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const currentLang = '{{ lang }}';
+    
+    // Tab switching
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.admin-tab-btn').forEach(el => el.classList.remove('active'));
+        
+        document.getElementById(tabId).classList.add('active');
+        
+        // Find button related to this tab and activate
+        const btn = Array.from(document.querySelectorAll('.admin-tab-btn')).find(b => b.onclick.toString().includes(tabId));
+        if (btn) btn.classList.add('active');
+    }
+
+    // Modal Add Participant
+    function openAddParticipantModal() {
+        document.getElementById('addParticipantModal').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeAddParticipantModal() {
+        document.getElementById('addParticipantModal').classList.remove('active');
+        document.body.style.overflow = 'auto';
+        document.getElementById('adminAddParticipantForm').reset();
+    }
+
+    // Modal Edit Participant
+    function openEditParticipantModal(id, name, email, workshopId) {
+        document.getElementById('editRegId').value = id;
+        document.getElementById('editName').value = name;
+        document.getElementById('editEmail').value = email;
+        document.getElementById('editWorkshopId').value = workshopId;
+        document.getElementById('editParticipantModal').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeEditParticipantModal() {
+        document.getElementById('editParticipantModal').classList.remove('active');
+        document.body.style.overflow = 'auto';
+        document.getElementById('adminEditParticipantForm').reset();
+    }
+
+    // Modal Edit Workshop
+    function openEditWorkshopModal(id, title, titleAr, instructor, desc, descAr, techStack) {
+        document.getElementById('editWsId').value = id;
+        document.getElementById('editWsTitle').value = title;
+        document.getElementById('editWsTitleAr').value = titleAr;
+        document.getElementById('editWsInstructor').value = instructor;
+        document.getElementById('editWsDescription').value = desc;
+        document.getElementById('editWsDescriptionAr').value = descAr;
+        document.getElementById('editWsTechStack').value = techStack;
+        document.getElementById('editWorkshopModal').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeEditWorkshopModal() {
+        document.getElementById('editWorkshopModal').classList.remove('active');
+        document.body.style.overflow = 'auto';
+        document.getElementById('adminEditWorkshopForm').reset();
+    }
+
+    // Search functionality in participants table
+    document.getElementById('adminSearch').addEventListener('keyup', function() {
+        const query = this.value.toLowerCase().trim();
+        const rows = document.querySelectorAll('#participantsTableBody tr:not(#emptyTablePlaceholder)');
+        
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            if (text.includes(query)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+
+    // Helper to escape HTML characters
+    function escapeHtml(str) {
+        return str.replace(/&/g, '&amp;')
+                  .replace(/</g, '&lt;')
+                  .replace(/>/g, '&gt;')
+                  .replace(/"/g, '&quot;')
+                  .replace(/'/g, '&#039;');
+    }
+
+    // API: Add Participant
+    document.getElementById('adminAddParticipantForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const name = document.getElementById('addName').value.trim();
+        const email = document.getElementById('addEmail').value.trim();
+        const workshopId = document.getElementById('addWorkshopId').value;
+        
+        fetch('/admin/api/add_participant', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: `name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&workshop_id=${encodeURIComponent(workshopId)}`
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                closeAddParticipantModal();
+                
+                // Add to table
+                const placeholder = document.getElementById('emptyTablePlaceholder');
+                if (placeholder) placeholder.remove();
+                
+                const tableBody = document.getElementById('participantsTableBody');
+                const row = document.createElement('tr');
+                row.setAttribute('data-id', data.id);
+                row.setAttribute('data-workshop-id', data.workshop_id);
+                
+                // Find workshop color class in the option
+                const selectedOption = document.querySelector(`#addWorkshopId option[value="${data.workshop_id}"]`);
+                const wsText = selectedOption ? selectedOption.text : '';
+                
+                row.innerHTML = `
+                    <td class="participant-name-col">${escapeHtml(data.name)}</td>
+                    <td class="participant-email-col">${escapeHtml(data.email)}</td>
+                    <td class="participant-workshop-col">
+                        <span class="workshop-badge workshop-purple">
+                            ${escapeHtml(data.workshop_title)}
+                        </span>
+                    </td>
+                    <td>${data.timestamp}</td>
+                    <td style="text-align: center; display: flex; justify-content: center; gap: 0.5rem; align-items: center;">
+                        <button class="btn-action btn-edit" onclick="openEditParticipantModal(${data.id}, '${escapeHtml(data.name)}', '${escapeHtml(data.email)}', ${data.workshop_id})" title="${currentLang === 'ar' ? 'تعديل' : 'Edit'}">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </button>
+                        <button class="btn-action btn-delete" onclick="deleteParticipant(${data.id})" title="${currentLang === 'ar' ? 'حذف' : 'Delete'}">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </td>
+                `;
+                tableBody.insertBefore(row, tableBody.firstChild);
+                
+                // Update stats
+                document.getElementById('statTotalRegistrations').textContent = data.total_registrations;
+                const capacity = 5 * 30;
+                document.getElementById('statCapacityPercent').textContent = (data.total_registrations / capacity * 100).toFixed(1) + '%';
+            } else {
+                alert(data.message || 'An error occurred.');
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Failed to register participant.');
+        });
+    });
+
+    // API: Edit Participant
+    document.getElementById('adminEditParticipantForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const id = document.getElementById('editRegId').value;
+        const name = document.getElementById('editName').value.trim();
+        const email = document.getElementById('editEmail').value.trim();
+        const workshopId = document.getElementById('editWorkshopId').value;
+        
+        fetch('/admin/api/edit_participant', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: `id=${id}&name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&workshop_id=${encodeURIComponent(workshopId)}`
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                closeEditParticipantModal();
+                
+                // Find row and update cells
+                const row = document.querySelector(`#participantsTableBody tr[data-id="${id}"]`);
+                if (row) {
+                    row.setAttribute('data-workshop-id', data.workshop_id);
+                    row.querySelector('.participant-name-col').textContent = data.name;
+                    row.querySelector('.participant-email-col').textContent = data.email;
+                    
+                    const badge = row.querySelector('.participant-workshop-col span');
+                    if (badge) {
+                        badge.textContent = data.workshop_title;
+                    }
+                    
+                    // Update actions edit function arguments
+                    const editBtn = row.querySelector('.btn-edit');
+                    if (editBtn) {
+                        editBtn.setAttribute('onclick', `openEditParticipantModal(${data.id}, '${escapeHtml(data.name)}', '${escapeHtml(data.email)}', ${data.workshop_id})`);
+                    }
+                }
+            } else {
+                alert(data.message || 'An error occurred.');
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Failed to edit participant details.');
+        });
+    });
+
+    // API: Delete Participant
+    function deleteParticipant(id) {
+        const confirmMsg = currentLang === 'ar' 
+            ? 'هل أنت متأكد من حذف هذا التسجيل بالكامل؟' 
+            : 'Are you sure you want to delete this registration?';
+        if (!confirm(confirmMsg)) return;
+        
+        fetch('/admin/api/delete_participant', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: `id=${id}`
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                const row = document.querySelector(`#participantsTableBody tr[data-id="${id}"]`);
+                if (row) row.remove();
+                
+                // If table empty, add placeholder
+                const tableBody = document.getElementById('participantsTableBody');
+                if (tableBody && tableBody.querySelectorAll('tr').length === 0) {
+                    tableBody.innerHTML = `
+                        <tr id="emptyTablePlaceholder">
+                            <td colspan="5" style="text-align: center; padding: 3rem; color: rgba(255,255,255,0.4);">
+                                <i class="fa-solid fa-user-clock" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
+                                ${currentLang === 'ar' ? 'لا توجد تسجيلات بعد' : 'No participants registered yet.'}
+                            </td>
+                        </tr>
+                    `;
+                }
+                
+                // Update stats
+                document.getElementById('statTotalRegistrations').textContent = data.total_registrations;
+                const capacity = 5 * 30;
+                document.getElementById('statCapacityPercent').textContent = (data.total_registrations / capacity * 100).toFixed(1) + '%';
+            } else {
+                alert(data.message || 'An error occurred.');
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Failed to delete registration.');
+        });
+    }
+
+    // API: Edit Workshop
+    document.getElementById('adminEditWorkshopForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const id = document.getElementById('editWsId').value;
+        const title = document.getElementById('editWsTitle').value.trim();
+        const titleAr = document.getElementById('editWsTitleAr').value.trim();
+        const instructor = document.getElementById('editWsInstructor').value.trim();
+        const desc = document.getElementById('editWsDescription').value.trim();
+        const descAr = document.getElementById('editWsDescriptionAr').value.trim();
+        const techStack = document.getElementById('editWsTechStack').value.trim();
+        
+        fetch('/admin/api/edit_workshop', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: `id=${id}&title=${encodeURIComponent(title)}&title_ar=${encodeURIComponent(titleAr)}&instructor=${encodeURIComponent(instructor)}&description=${encodeURIComponent(desc)}&description_ar=${encodeURIComponent(descAr)}&tech_stack=${encodeURIComponent(techStack)}`
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                closeEditWorkshopModal();
+                
+                // Update workshop card in DOM
+                const card = document.getElementById(`workshopCard-${id}`);
+                if (card) {
+                    card.querySelector('.ws-title-en').textContent = data.title;
+                    card.querySelector('.ws-title-ar').textContent = data.title_ar;
+                    card.querySelector('.ws-instructor').innerHTML = `<i class="fa-solid fa-chalkboard-user"></i> ${escapeHtml(data.instructor)}`;
+                    card.querySelector('.ws-desc-en').textContent = data.description;
+                    card.querySelector('.ws-desc-ar').textContent = data.description_ar;
+                    
+                    // Tech stack
+                    const techContainer = card.querySelector('.ws-tech-stack');
+                    if (techContainer) {
+                        techContainer.innerHTML = data.tech_stack.split(',').map(tech => 
+                            `<span style="font-size: 0.75rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 0.2rem 0.5rem; border-radius: 6px; font-family: var(--font-mono);">${escapeHtml(tech.trim())}</span>`
+                        ).join('');
+                    }
+                    
+                    // Update actions edit button args
+                    const editBtn = card.querySelector('.admin-ws-header .btn-edit');
+                    if (editBtn) {
+                        editBtn.setAttribute('onclick', `openEditWorkshopModal(${data.id}, '${escapeHtml(data.title)}', '${escapeHtml(data.title_ar)}', '${escapeHtml(data.instructor)}', '${escapeHtml(data.description)}', '${escapeHtml(data.description_ar)}', '${escapeHtml(data.tech_stack)}')`);
+                    }
+                }
+            } else {
+                alert(data.message || 'An error occurred.');
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Failed to update workshop details.');
+        });
+    });
+</script>
+{% endblock %}

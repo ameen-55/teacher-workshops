@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+
+{% block title %}Interactive Lab - Tech Arsenal Empire{% endblock %}
+
+{% block content %}
+<div class="section-title-wrap">
+    <h1 class="section-title">The <span class="text-gradient">Telemetry Stables</span></h1>
+    <p class="section-subtitle">Simulate real-time workshop occupancy rates and use the sandbox encryption scrambler.</p>
+</div>
+
+<div class="lab-container">
+    <!-- Server Telemetry Panel -->
+    <div class="lab-panel">
+        <div class="glass-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <h3 class="text-gradient" style="font-weight: 800; font-size: 1.4rem;">Live Capacity Telemetry</h3>
+                <div style="font-family: var(--font-mono); font-size: 0.85rem; display: flex; align-items: center;">
+                    <span class="status-dot" id="system-status-dot"></span>
+                    <span id="system-status-text" class="text-cyan">SECURE</span>
+                </div>
+            </div>
+            
+            <div class="telemetry-grid">
+                <!-- Total Fill Rate -->
+                <div class="glass-card telemetry-card">
+                    <div class="dial-outer" id="cpu-dial">
+                        <div class="dial-inner">
+                            <span class="dial-val" id="cpu-val">0.0</span>
+                            <span class="dial-unit">%</span>
+                        </div>
+                    </div>
+                    <span class="hud-label">Total Occupancy</span>
+                </div>
+                
+                <!-- Popular Fill Rate -->
+                <div class="glass-card telemetry-card">
+                    <div class="dial-outer" id="memory-dial">
+                        <div class="dial-inner">
+                            <span class="dial-val" id="memory-val">0.0</span>
+                            <span class="dial-unit">%</span>
+                        </div>
+                    </div>
+                    <span class="hud-label">Popularity Peak</span>
+                </div>
+                
+                <!-- Open Workshops -->
+                <div class="glass-card telemetry-card">
+                    <div class="dial-outer" id="network-dial">
+                        <div class="dial-inner">
+                            <span class="dial-val" id="network-val">0</span>
+                            <span class="dial-unit">Nodes</span>
+                        </div>
+                    </div>
+                    <span class="hud-label">Open Workshops</span>
+                </div>
+            </div>
+            
+            <!-- Secondary Stats -->
+            <div style="margin-top: 2rem; display: flex; justify-content: space-around; font-family: var(--font-mono); font-size: 0.9rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1.5rem;">
+                <div>
+                    <i class="fa-solid fa-users text-purple"></i> Query Hits: <span id="active-connections" class="text-cyan">0</span>
+                </div>
+                <div>
+                    <i class="fa-solid fa-server text-cyan"></i> Total Registrations: <span id="db-records" class="text-purple">0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Client-side Cryptography Sandbox Terminal -->
+    <div class="sandbox-terminal">
+        <div class="terminal-header">
+            <span><i class="fa-solid fa-terminal"></i> ENCRYPTOR // TERMINAL v1.0.4</span>
+            <div class="terminal-controls">
+                <span class="terminal-dot dot-red"></span>
+                <span class="terminal-dot dot-yellow"></span>
+                <span class="terminal-dot dot-green"></span>
+            </div>
+        </div>
+        <div class="terminal-body">
+            <div class="terminal-input-wrap">
+                <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.5rem;">
+                    // Input text to initiate imperial tactical cipher scrambler
+                </p>
+                <textarea class="terminal-textarea" id="cipher-input" placeholder="Type tactical message here..."></textarea>
+                
+                <div class="terminal-actions">
+                    <button class="btn btn-secondary" style="padding: 0.5rem 1.25rem; font-size: 0.85rem;" id="btn-scramble">
+                        <i class="fa-solid fa-microchip"></i> Matrix Scramble
+                    </button>
+                    <button class="btn btn-primary" style="padding: 0.5rem 1.25rem; font-size: 0.85rem;" id="btn-hex">
+                        <i class="fa-solid fa-binary"></i> Convert Hex
+                    </button>
+                </div>
+                
+                <div>
+                    <div style="font-size: 0.8rem; color: var(--accent-pink); text-transform: uppercase; letter-spacing: 1px; font-weight: bold; margin-bottom: 0.5rem;">
+                        Cipher Broadcast Output
+                    </div>
+                    <div class="terminal-output" id="cipher-output">// Console standing by...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/lab.js') }}"></script>
+{% endblock %}

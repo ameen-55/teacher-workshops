@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}Workshops - Registration System{% endblock %}
+
+{% block content %}
+<div class="section-title-wrap">
+    <h1 class="section-title">Teacher <span class="text-gradient">Workshops</span></h1>
+    <p class="section-subtitle">Browse available workshops. Each teacher may attend only one workshop. Re-submit anytime to change your selection.</p>
+</div>
+
+<div class="arsenal-grid" id="workshops-grid">
+    {% for ws in workshops %}
+    <div class="glass-card project-card">
+        <div class="project-header">
+            <div class="project-icon">
+                <i class="fa-solid {{ ws.icon_class }}"></i>
+            </div>
+            <span class="complexity-badge core">Open Registration</span>
+        </div>
+        
+        <h3 class="project-title">{{ ws.title }}</h3>
+        
+        <div class="project-desc-meta">
+            <span class="text-cyan"><i class="fa-solid fa-chalkboard-user"></i> {{ ws.instructor }}</span>
+        </div>
+
+        <p class="project-desc">{{ ws.description }}</p>
+
+        <!-- Tech Stack tags -->
+        <div class="project-tech">
+            {% for tech in ws.tech_stack.split(',') %}
+            <span class="tech-tag">{{ tech.strip() }}</span>
+            {% endfor %}
+        </div>
+
+        <!-- Action Button -->
+        <div class="project-action">
+            <a href="{{ url_for('main.contact') }}" class="btn btn-primary btn-block">
+                <i class="fa-solid fa-user-plus"></i> Register for this Workshop
+            </a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

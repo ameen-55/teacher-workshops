@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+
+{% block title %}Register - Workshop Registration{% endblock %}
+
+{% block content %}
+<div class="section-title-wrap">
+    <h1 class="section-title">Teacher Workshop <span class="text-gradient">Registration</span></h1>
+    <p class="section-subtitle">Register yourself for one workshop. Each teacher may attend only one workshop. Re-submit anytime to change your selection.</p>
+</div>
+
+    <!-- Display Flask Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="flash-message {{ category }}">
+              <i class="fa-solid {% if category == 'success' %}fa-circle-check{% elif category == 'info' %}fa-circle-info{% else %}fa-triangle-exclamation{% endif %}"></i>
+              {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+<div class="contact-container">
+    <!-- Registration Form -->
+    <div class="glass-card contact-card">
+        <h3 class="form-card-title">Teacher Registration</h3>
+        <form action="{{ url_for('main.contact') }}" method="POST">
+            <div class="form-group">
+                <label for="name" class="form-label">Full Name</label>
+                <input type="text" id="name" name="name" class="form-control" placeholder="e.g. Ahmad Hassan" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="email" class="form-label">Email Address</label>
+                <input type="email" id="email" name="email" class="form-control" placeholder="e.g. teacher@school.edu" required>
+                <small class="form-help">
+                    <i class="fa-solid fa-rotate"></i> Re-submit with the same email to change your workshop.
+                </small>
+            </div>
+            
+            <div class="form-group">
+                <label for="workshop_id" class="form-label">Select Workshop</label>
+                <select id="workshop_id" name="workshop_id" class="form-control" required>
+                    <option value="" disabled selected>-- Choose a Workshop --</option>
+                    {% for ws in workshops %}
+                        <option value="{{ ws.id }}">
+                            {{ ws.title }} - {{ ws.instructor }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <button type="submit" class="btn btn-primary btn-block">
+                <i class="fa-solid fa-satellite-dish"></i> Register
+            </button>
+        </form>
+
+        <div class="form-hint">
+            <i class="fa-solid fa-circle-info"></i>
+            <span><strong>Need to change workshops?</strong> Simply re-submit this form with the same email address.
+            Your previous selection will be automatically updated and a confirmation email will be sent.</span>
+        </div>
+    </div>
+
+    <!-- Live Registrations Database Output -->
+    <div class="glass-card db-panel">
+        <div class="db-panel-header">
+            <h3 class="db-panel-title">Registered Teachers</h3>
+            <span class="db-panel-badge">db.registrations</span>
+        </div>
+        
+        <div class="db-logs">
+            {% if registrations %}
+                {% for reg in registrations %}
+                <div class="db-log-card">
+                    <div class="db-log-meta">
+                        <span>REGISTRATION ID: #{{ reg.id }}</span>
+                        <span>
+                            {% if reg.updated_at %}
+                                Updated: {{ reg.updated_at.strftime('%Y-%m-%d %H:%M') }} UTC
+                            {% else %}
+                                {{ reg.timestamp.strftime('%Y-%m-%d %H:%M') }} UTC
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="db-log-info">
+                        <div class="db-log-name">{{ reg.name }} <{{ reg.email }}></div>
+                        <div class="db-log-row">
+                            <span class="db-log-workshop">
+                                <i class="fa-solid fa-graduation-cap"></i> {{ reg.workshop.title }}
+                            </span>
+                            {% if reg.updated_at %}
+                                <span class="db-log-modified">
+                                    <i class="fa-solid fa-pen"></i> modified
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="board-empty">
+                    <i class="fa-solid fa-database-slash"></i>
+                    <p>// No registrations yet. Submit the form above to begin.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
