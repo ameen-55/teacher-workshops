@@ -11,6 +11,10 @@ class Config:
         
     SQLALCHEMY_DATABASE_URI = _database_url or 'sqlite:///database.db'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        'pool_pre_ping': True,
+        'pool_recycle': 300,
+    }
     ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD') or '123456'
 
     # Flask-Mail SMTP Configuration
