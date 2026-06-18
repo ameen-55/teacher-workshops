@@ -87,7 +87,7 @@ def register_ajax():
             send_registration_email(name, email, get_workshop_title(workshop), is_update=True)
             is_update = True
     else:
-        reg = Registration(name=name, email=email, workshop_id=workshop_id)
+        reg = Registration(name=name, email=email, workshop_id=int(workshop_id))
         db.session.add(reg)
         db.session.commit()
         send_registration_email(name, email, get_workshop_title(workshop), is_update=False)
@@ -264,7 +264,7 @@ def home():
             return redirect(url_for('main.home'))
         
         else:
-            reg = Registration(name=name, email=email, workshop_id=workshop_id)
+            reg = Registration(name=name, email=email, workshop_id=int(workshop_id))
             db.session.add(reg)
             db.session.commit()
             
@@ -358,7 +358,7 @@ def admin_add_participant():
     if existing:
         return jsonify({'success': False, 'message': 'This email is already registered.'}), 400
         
-    reg = Registration(name=name, email=email, workshop_id=workshop_id)
+    reg = Registration(name=name, email=email, workshop_id=int(workshop_id))
     db.session.add(reg)
     db.session.commit()
     

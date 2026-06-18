@@ -3,7 +3,13 @@ import os
 class Config:
     """Flask application configuration settings."""
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'teacher-workshop-dev-secret-key'
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///database.db'
+    
+    # Handle Render's postgres:// prefix mismatch with SQLAlchemy 1.4+
+    _database_url = os.environ.get('DATABASE_URL')
+    if _database_url and _database_url.startswith("postgres://"):
+        _database_url = _database_url.replace("postgres://", "postgresql://", 1)
+        
+    SQLALCHEMY_DATABASE_URI = _database_url or 'sqlite:///database.db'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD') or '123456'
 
