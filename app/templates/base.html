@@ -17,7 +17,7 @@
     </div>
 
     <nav class="navbar" id="navbar">
-        {% if session.get('is_admin') %}
+        {% if session.get('is_admin') and request.endpoint == 'main.admin_dashboard' %}
         <a href="{{ url_for('main.admin_dashboard') }}" class="nav-brand">
             <i class="fa-solid fa-user-shield"></i>
             <span>{% if lang == 'ar' %}لوحة التحكم{% else %}ADMIN PANEL{% endif %}</span>
