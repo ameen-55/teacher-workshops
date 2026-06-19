@@ -21,6 +21,7 @@ html, body {
     background: #0a0a0f;
     color: white;
     min-height: 100vh;
+    overflow-x: hidden;
 }
 
 /* -------------------------------------------------------------
@@ -1891,6 +1892,7 @@ html[dir="rtl"] .db-logs {
 }
 
 @media (max-width: 768px) {
+    .container { padding: 0 1.5rem; }
     .navbar { width: 95%; padding: 0.8rem 1.2rem; top: 15px; }
     .nav-links { display: none; }
     .hero-banner { min-height: 450px; }
@@ -1933,14 +1935,22 @@ html[dir="rtl"] .db-logs {
     .contact-container { grid-template-columns: 1fr; }
     .db-panel-header { flex-direction: column; align-items: flex-start; }
     .db-log-meta { flex-direction: column; }
+    .neon-footer-dev { font-size: 1.2rem !important; padding: 0.5rem 1rem; letter-spacing: 1px; }
+    .registration-cta { padding: 2rem 1.5rem; margin: 3rem 0; }
 }
 
 @media (max-width: 480px) {
+    .container { padding: 0 1rem; }
     .modal-content { padding: 1.2rem; margin: 0.5rem; width: 95%; max-height: 85vh; }
     .modal-header { margin-bottom: 1rem; }
     .workshop-preview { padding: 0.8rem; margin-bottom: 1rem; }
     .form-group { margin-bottom: 1rem; }
     .modal-title { font-size: 1.2rem; }
+    .neon-footer-dev { font-size: 1rem !important; padding: 0.5rem; white-space: normal; line-height: 1.4; }
+    .registration-cta { padding: 1.5rem 1rem; margin: 2rem 0; }
+    .registration-cta h2 { font-size: 1.8rem; }
+    .cta-icon { width: 60px; height: 60px; font-size: 1.8rem; margin-bottom: 1rem; }
+    .hero-banner-content { padding: 3rem 1rem; }
 }
 
 /* -------------------------------------------------------------
