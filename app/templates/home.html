@@ -561,14 +561,6 @@ document.getElementById('modalRegistrationForm').addEventListener('submit', func
         return;
     }
     
-    // Check session-based ownership on submit
-    if (sessionEmail && sessionEmail.toLowerCase() !== email.toLowerCase()) {
-        alert(currentLang === 'ar' 
-            ? 'يمكنك تعديل تسجيلك الخاص فقط.' 
-            : 'You can only modify your own registration.');
-        return;
-    }
-    
     // Check if email already registered
     fetch('/check_registration', {
         method: 'POST',
@@ -584,14 +576,7 @@ document.getElementById('modalRegistrationForm').addEventListener('submit', func
         const newWorkshopTitle = newWorkshopBtn ? newWorkshopBtn.getAttribute('data-workshop-title') : '';
 
         if (data.exists) {
-            // If the email exists, but session is set to a DIFFERENT email
-            if (sessionEmail && sessionEmail.toLowerCase() !== email.toLowerCase()) {
-                alert(currentLang === 'ar'
-                    ? 'هذا البريد الإلكتروني مسجل بالفعل لمستخدم آخر.'
-                    : 'This email is already registered by another user.');
-                return;
-            }
-            
+            // Backend will validate session rules on final submit
             if (data.workshop_id !== newWorkshopId) {
                 // Show change confirmation modal
                 pendingRegistration = { workshopId: newWorkshopId, name, email };
@@ -636,12 +621,7 @@ function closeChangeModal() {
 }
 
 function cancelRegistration(email, name) {
-    if (!sessionEmail || sessionEmail.toLowerCase() !== email.toLowerCase()) {
-        alert(currentLang === 'ar' 
-            ? 'يمكنك إلغاء تسجيلك الخاص فقط.' 
-            : 'You can only cancel your own registration.');
-        return;
-    }
+    // Backend will validate session rules on cancel
 
     const confirmMsg = currentLang === 'ar' 
         ? `هل أنت متأكد من إلغاء تسجيل "${name}"؟` 
