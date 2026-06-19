@@ -44,20 +44,19 @@ def register_ajax():
             'message': 'Selected workshop does not exist.' if lang == 'en' else 'الورشة المحددة غير موجودة.'
         }), 404
 
-    registered_email = session.get('registered_email')
-    if registered_email and registered_email != email:
-        return jsonify({
-            'success': False,
-            'message': 'You can only modify your own registration.' if lang == 'en' else 'يمكنك تعديل تسجيلك الخاص فقط.'
-        }), 403
-
     existing_reg = Registration.query.filter_by(email=email).first()
-    if existing_reg and registered_email and registered_email != email:
-        return jsonify({
-            'success': False,
-            'message': 'This email is already registered by another user.' if lang == 'en' else 'هذا البريد الإلكتروني مسجل بالفعل لمستخدم آخر.'
-        }), 403
-    
+    registered_email = session.get('registered_email')
+
+    if existing_reg:
+        # If the email exists, the user MUST own it in their session to modify it.
+        if not registered_email or registered_email != email:
+            return jsonify({
+                'success': False,
+                'message': 'This email is already registered. You can only modify your own registration.' if lang == 'en' else 'هذا البريد مسجل بالفعل. يمكنك تعديل تسجيلك الخاص فقط.'
+            }), 403
+    else:
+        # Optional: You could restrict one new registration per device here, but allowing new ones is better UX if they made a typo previously.
+        pass
     def get_workshop_title(ws):
         if not ws:
             return 'Unknown Workshop' if lang == 'en' else 'ورشة غير معروفة'
@@ -204,21 +203,16 @@ def home():
             )
             return redirect(url_for('main.home'))
 
-        registered_email = session.get('registered_email')
-        if registered_email and registered_email != email:
-            flash(
-                'You can only modify your own registration.' if lang == 'en' else 'يمكنك تعديل تسجيلك الخاص فقط.',
-                'danger'
-            )
-            return redirect(url_for('main.home'))
-        
         existing_reg = Registration.query.filter_by(email=email).first()
-        if existing_reg and registered_email and registered_email != email:
-            flash(
-                'This email is already registered by another user.' if lang == 'en' else 'هذا البريد الإلكتروني مسجل بالفعل لمستخدم آخر.',
-                'danger'
-            )
-            return redirect(url_for('main.home'))
+        registered_email = session.get('registered_email')
+
+        if existing_reg:
+            if not registered_email or registered_email != email:
+                flash(
+                    'This email is already registered. You can only modify your own registration.' if lang == 'en' else 'هذا البريد مسجل بالفعل. يمكنك تعديل تسجيلك الخاص فقط.',
+                    'danger'
+                )
+                return redirect(url_for('main.home'))
         
         def get_workshop_title(ws):
             if not ws:
