@@ -497,6 +497,7 @@ function submitRegistrationAjax(workshopId, name, email) {
 
     fetch('/register_ajax', {
         method: 'POST',
+        credentials: 'same-origin',
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
         body: `workshop_id=${encodeURIComponent(workshopId)}&name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}`
     })
@@ -564,6 +565,7 @@ document.getElementById('modalRegistrationForm').addEventListener('submit', func
     // Check if email already registered
     fetch('/check_registration', {
         method: 'POST',
+        credentials: 'same-origin',
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
         body: 'email=' + encodeURIComponent(email)
     })
@@ -631,6 +633,7 @@ function cancelRegistration(email, name) {
 
     fetch('/cancel_registration', {
         method: 'POST',
+        credentials: 'same-origin',
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
         body: 'email=' + encodeURIComponent(email)
     })
